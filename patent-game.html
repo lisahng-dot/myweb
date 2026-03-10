@@ -1,0 +1,3307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>绿色出行专利运营大富翁</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #FF6900;
+            --primary-light: #FF8C38;
+            --secondary-color: #333333;
+            --player1-color: #9C27B0;
+            --player2-color: #FF6900;
+            --bg-main: #F5F5F7;
+            --bg-card: #FFFFFF;
+            --bg-board: #FAFAFA;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-light: #999999;
+            --border-color: #E5E5E5;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.12);
+            --road-width: 38px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 12px;
+            gap: 12px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 2px;
+        }
+
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .turn-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .turn-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .left-sidebar {
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .player-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .player-card.player1 {
+            border-left: 4px solid var(--player1-color);
+            background: linear-gradient(135deg, #FFFFFF, #F3E5F5);
+        }
+
+        .player-card.player2 {
+            border-left: 4px solid var(--player2-color);
+            background: linear-gradient(135deg, #FFFFFF, #FFF3E0);
+        }
+
+        .player-card.active {
+            box-shadow: 0 0 0 2px var(--primary-color), var(--shadow-hover);
+        }
+
+        .player-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        .player-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            color: var(--text-primary);
+        }
+
+        .stat-value.positive {
+            color: #4CAF50;
+        }
+
+        .stat-value.negative {
+            color: #E53935;
+        }
+
+        .action-btns-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .action-btn-item {
+            flex: 1;
+            padding: 8px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .action-btn-item.ledger-btn {
+            background: linear-gradient(135deg, #F5F5F7, #EBEBED);
+            color: var(--text-secondary);
+        }
+
+        .action-btn-item.ledger-btn:hover {
+            background: linear-gradient(135deg, #EBEBED, #E5E5E7);
+            color: var(--text-primary);
+        }
+
+        .action-btn-item.sell-btn {
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            color: #E65100;
+            border-color: #FFCC80;
+        }
+
+        .action-btn-item.sell-btn:hover {
+            background: linear-gradient(135deg, #FFE0B2, #FFCC80);
+            color: #BF360C;
+        }
+
+        .action-btn-item.sell-btn:disabled {
+            background: #F5F5F7;
+            color: #BDBDBD;
+            cursor: not-allowed;
+            border-color: #E0E0E0;
+        }
+
+        .action-panel {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: var(--shadow);
+            flex: 1;
+        }
+
+        .action-title {
+            font-size: 13px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            font-weight: 600;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .turn-info {
+            background: #F5F5F7;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.8;
+            min-height: 94px;
+            max-height: 94px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #C0C0C5 transparent;
+        }
+
+        .turn-info::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .turn-info::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .turn-info::-webkit-scrollbar-thumb {
+            background: #C0C0C5;
+            border-radius: 3px;
+        }
+
+        .turn-info::-webkit-scrollbar-thumb:hover {
+            background: #A0A0A5;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            min-height: 44px;
+            max-height: 44px;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            min-width: 0;
+            padding: 10px 16px;
+        }
+
+        .action-buttons.single-btn {
+            justify-content: center;
+        }
+
+        .action-buttons.single-btn .btn {
+            flex: none;
+            min-width: 140px;
+        }
+
+        .action-buttons.two-btn .btn {
+            flex: 1;
+        }
+
+        .action-info {
+            padding: 10px;
+            background: #FFF8F0;
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border: 1px solid #FFE0B2;
+            min-height: 20px;
+        }
+
+        .center-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .board-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 15px;
+            position: relative;
+        }
+
+        .board-outer {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            aspect-ratio: 3 / 1;
+        }
+
+        .road-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .road-segment {
+            position: absolute;
+            background: linear-gradient(180deg, #B8B8B8, #D8D8D8, #B8B8B8);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15), inset 0 -1px 2px rgba(255,255,255,0.6);
+        }
+
+        .road-h::before,
+        .road-v::before {
+            content: '';
+            position: absolute;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 14px,
+                #888888 14px,
+                #888888 20px
+            );
+            height: 2px;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            transform: translateY(-50%);
+            border-radius: 1px;
+        }
+
+        .road-v::before {
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 14px,
+                #888888 14px,
+                #888888 20px
+            );
+            width: 2px;
+            height: 80%;
+            top: 10%;
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+        }
+
+        .road-bottom {
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--road-width);
+        }
+
+        .road-top {
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--road-width);
+        }
+
+        .road-left {
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: var(--road-width);
+        }
+
+        .road-right {
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: var(--road-width);
+        }
+
+        .board-inner {
+            position: absolute;
+            top: var(--road-width);
+            left: var(--road-width);
+            right: var(--road-width);
+            bottom: var(--road-width);
+            z-index: 2;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 4px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cell {
+            background: var(--bg-board);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .cell:hover {
+            transform: scale(1.03);
+            box-shadow: var(--shadow-hover);
+            z-index: 10;
+        }
+
+        .cell.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+
+        .cell.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .cell.start {
+            background: linear-gradient(135deg, #FFF5E6, #FFE8CC);
+            border: 2px solid var(--primary-color);
+        }
+
+        .cell.bonus {
+            background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+            border: 2px solid #FFA000;
+            animation: bonus-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes bonus-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 160, 0, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(255, 160, 0, 0.6); }
+        }
+
+        .bonus-price {
+            color: #FF8F00 !important;
+            font-weight: 700;
+        }
+
+        .cell.troll {
+            background: linear-gradient(135deg, #ECEFF1, #CFD8DC);
+            border: 2px solid #607D8B;
+            animation: troll-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes troll-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(96, 125, 139, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(96, 125, 139, 0.6); }
+        }
+
+        .troll-price {
+            color: #546E7A !important;
+            font-weight: 700;
+        }
+
+        .cell.player1-owned {
+            background: linear-gradient(135deg, #F3E5F5, #E1BEE7);
+            border-color: #9C27B0;
+        }
+
+        .cell.player2-owned {
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            border-color: var(--player2-color);
+        }
+
+        .cell.tpo-owned {
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+            border-color: #1976D2;
+        }
+
+        .cell.expired {
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+            border-color: #4CAF50;
+        }
+
+        .cell.invalidated {
+            background: linear-gradient(135deg, #F1F8E9, #DCEDC8);
+            border-color: #8BC34A;
+        }
+
+        .expired-badge {
+            background: #4CAF50 !important;
+            color: #fff !important;
+        }
+
+        .invalidated-badge {
+            background: #8BC34A !important;
+            color: #fff !important;
+        }
+
+        .cell-icon-bg {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 28px;
+            opacity: 0.25;
+            pointer-events: none;
+            filter: grayscale(30%);
+        }
+
+        .cell-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            width: 100%;
+            padding-top: 4px;
+        }
+
+        .cell-name {
+            font-size: 15px;
+            text-align: center;
+            color: var(--text-primary);
+            line-height: 1.3;
+            font-weight: 600;
+            margin-bottom: 4px;
+            word-break: break-all;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+        }
+
+        .cell-price {
+            font-size: 13px;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .cell-badge {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            font-size: 8px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            font-weight: 600;
+            z-index: 5;
+        }
+
+        .cell-uses {
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            font-size: 8px;
+            color: #F57C00;
+            font-weight: 700;
+            z-index: 5;
+        }
+
+        .cell-life {
+            position: absolute;
+            bottom: 3px;
+            left: 3px;
+            font-size: 8px;
+            color: #7B1FA2;
+            font-weight: 700;
+            background: rgba(123, 31, 162, 0.1);
+            padding: 1px 4px;
+            border-radius: 3px;
+            z-index: 5;
+        }
+
+        .tech-category {
+            display: inline-block;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 8px;
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+
+        .tech-battery { background: #E8F5E9; color: #2E7D32; }
+        .tech-driving { background: #E3F2FD; color: #1565C0; }
+        .tech-cabin { background: #F3E5F5; color: #7B1FA2; }
+        .tech-platform { background: #FFF3E0; color: #E65100; }
+        .tech-charging { background: #E0F7FA; color: #00838F; }
+        .tech-bonus { background: #FFECB3; color: #FF8F00; }
+        .tech-troll { background: #CFD8DC; color: #546E7A; }
+
+        .player-marker {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .player-marker.player1 {
+            filter: drop-shadow(0 2px 4px rgba(0, 150, 100, 0.4));
+        }
+
+        .player-marker.player2 {
+            filter: drop-shadow(0 2px 4px rgba(230, 100, 0, 0.4));
+        }
+
+        .news-ticker {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 10px 14px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .news-ticker:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .ticker-label {
+            font-size: 11px;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ticker-hint {
+            font-size: 10px;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .ticker-content {
+            height: 18px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticker-text {
+            white-space: nowrap;
+            animation: ticker 20s linear infinite;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .bottom-panel {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 14px;
+        }
+
+        .bottom-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: #F5F5F5;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+            max-height: 500px;
+        }
+
+        .tab-btn {
+            position: relative;
+        }
+
+        .tab-btn::after {
+            content: '▼';
+            font-size: 10px;
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .tab-btn.active::after {
+            transform: rotate(180deg);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(255, 105, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: #F5F5F5;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #EEEEEE;
+        }
+
+        .btn-danger {
+            background: #E53935;
+            color: #fff;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #D32F2F;
+        }
+
+        .rules-section {
+            margin-bottom: 16px;
+        }
+
+        .rules-section h3 {
+            font-size: 13px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .rules-section p, .rules-section li {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 6px;
+        }
+
+        .rules-section ul {
+            padding-left: 16px;
+        }
+
+        .formula {
+            background: #FFF8F0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--primary-color);
+            margin: 6px 0;
+            border: 1px solid #FFE0B2;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            background: #F9F9F9;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .setting-label {
+            font-size: 12px;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .setting-desc {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .setting-input-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .setting-input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+            text-align: right;
+            font-family: 'SF Mono', 'Courier New', monospace;
+        }
+
+        .setting-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .setting-input.error {
+            border-color: #E53935;
+            background: #FFEBEE;
+        }
+
+        .setting-unit {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-left: 6px;
+        }
+
+        .settings-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .modal p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .game-over-modal {
+            text-align: center;
+        }
+
+        .news-history-modal {
+            max-width: 500px;
+        }
+
+        .news-history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .news-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .news-item:last-child {
+            border-bottom: none;
+        }
+
+        .news-item-time {
+            font-size: 10px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .news-empty {
+            text-align: center;
+            color: var(--text-light);
+            padding: 20px;
+            font-size: 13px;
+        }
+
+        .ledger-modal {
+            max-width: 550px;
+        }
+
+        .ledger-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .ledger-tab {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            background: #F5F5F7;
+            color: var(--text-secondary);
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .ledger-tab.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .ledger-list {
+            max-height: 280px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .ledger-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ledger-item:last-child {
+            border-bottom: none;
+        }
+
+        .ledger-item-info {
+            flex: 1;
+        }
+
+        .ledger-item-desc {
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .ledger-item-time {
+            font-size: 10px;
+            color: var(--text-light);
+        }
+
+        .ledger-item-amount {
+            font-weight: 600;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .ledger-item-amount.income {
+            color: var(--player1-color);
+        }
+
+        .ledger-item-amount.expense {
+            color: #E53935;
+        }
+
+        .ledger-summary {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: #F5F5F7;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .ledger-summary-item {
+            text-align: center;
+        }
+
+        .ledger-summary-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .ledger-summary-value {
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Courier New', monospace;
+        }
+
+        .sell-patent-list {
+            max-height: 280px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .sell-patent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sell-patent-item:hover {
+            background: #FFF3E0;
+            border-color: #FFB74D;
+        }
+
+        .sell-patent-info {
+            flex: 1;
+        }
+
+        .sell-patent-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .sell-patent-detail {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .sell-patent-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--player1-color);
+            font-family: 'SF Mono', 'Courier New', monospace;
+        }
+
+        .sell-confirm {
+            margin: 10px 0;
+        }
+
+        .sell-confirm-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sell-confirm-item:last-child {
+            border-bottom: none;
+        }
+
+        .sell-confirm-item span:first-child {
+            color: var(--text-secondary);
+        }
+
+        .sell-confirm-item span:last-child {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .sell-note {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 10px;
+            background: #F5F5F7;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .sell-formula {
+            font-size: 12px;
+            color: var(--text-primary);
+            background: #E3F2FD;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .sell-warning {
+            font-size: 12px;
+            color: #E65100;
+            background: #FFF3E0;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .winner-text {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 16px 0;
+        }
+
+        .winner-text.player1 {
+            color: var(--player1-color);
+        }
+
+        .winner-text.player2 {
+            color: var(--player2-color);
+        }
+
+        .overlay-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-shadow: 0 2px 8px rgba(255, 105, 0, 0.3);
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: rgba(255,255,255,0.95);
+            padding: 12px 24px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .overlay-text.show {
+            opacity: 1;
+        }
+
+        .dice-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .dice-overlay.show {
+            opacity: 1;
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .dice {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: dice-roll 0.1s ease-in-out infinite;
+        }
+
+        .dice.stopped {
+            animation: none;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 105, 0, 0.4);
+        }
+
+        @keyframes dice-roll {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            25% { transform: rotateX(90deg) rotateY(90deg); }
+            50% { transform: rotateX(180deg) rotateY(180deg); }
+            75% { transform: rotateX(270deg) rotateY(270deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        .dice-result {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .dice-result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .transaction-animation {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 20px;
+            animation: float-up 1.5s ease-out forwards;
+        }
+
+        .transaction-animation.income {
+            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.15);
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .transaction-animation.expense {
+            color: #E53935;
+            background: rgba(229, 57, 53, 0.15);
+            border: 2px solid rgba(229, 57, 53, 0.3);
+        }
+
+        @keyframes float-up {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-30px) scale(1.1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(0.8);
+            }
+        }
+
+        .coin-burst {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .coin-particle {
+            position: absolute;
+            font-size: 20px;
+            animation: coin-fly 0.8s ease-out forwards;
+        }
+
+        @keyframes coin-fly {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0.5);
+            }
+        }
+
+        .copyright {
+            text-align: center;
+            padding: 10px;
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: 600;
+            border-top: 1px solid var(--border-color);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header class="header">
+            <div class="header-left">
+                <div>
+                    <h1>绿色出行专利运营大富翁</h1>
+                    <p class="subtitle">新能源汽车产业专利竞争模拟游戏</p>
+                </div>
+            </div>
+            <div class="turn-badge">
+                <span class="turn-indicator" id="turn-indicator"></span>
+                <span id="header-turn-info">第1年 · 回合 1 - 绿能科技</span>
+            </div>
+        </header>
+
+        <div class="main-area">
+            <div class="left-sidebar">
+                <div class="player-card player1" id="player1-card">
+                    <div class="player-name">
+                        <span class="player-icon">🚗</span>
+                        <span id="player1-name">绿能科技</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">现金</span>
+                        <span class="stat-value" id="player1-cash">¥10,000万</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">专利数</span>
+                        <span class="stat-value" id="player1-patents">0项</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">专利资产</span>
+                        <span class="stat-value" id="player1-assets">¥0万</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">本轮收支</span>
+                        <span class="stat-value" id="player1-round">¥0万</span>
+                    </div>
+                    <div class="action-btns-row">
+                        <div class="action-btn-item ledger-btn" onclick="showLedger(0)">📋 账本</div>
+                        <div class="action-btn-item sell-btn" onclick="showSellPanel(0)">💰 出售</div>
+                    </div>
+                </div>
+
+                <div class="player-card player2" id="player2-card">
+                    <div class="player-name">
+                        <span class="player-icon">🚙</span>
+                        <span id="player2-name">智驾集团</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">现金</span>
+                        <span class="stat-value" id="player2-cash">¥10,000万</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">专利数</span>
+                        <span class="stat-value" id="player2-patents">0项</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">专利资产</span>
+                        <span class="stat-value" id="player2-assets">¥0万</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">本轮收支</span>
+                        <span class="stat-value" id="player2-round">¥0万</span>
+                    </div>
+                    <div class="action-btns-row">
+                        <div class="action-btn-item ledger-btn" onclick="showLedger(1)">📋 账本</div>
+                        <div class="action-btn-item sell-btn" onclick="showSellPanel(1)">💰 出售</div>
+                    </div>
+                </div>
+
+                <div class="action-panel" id="action-panel">
+                    <div class="action-title">🎮 游戏操作</div>
+                    <div class="turn-info" id="turn-info">
+                        点击"掷骰子"开始你的回合
+                    </div>
+                    <div class="action-buttons" id="action-buttons">
+                        <button class="btn btn-primary" id="btn-roll">🎲 掷骰子</button>
+                    </div>
+                    <div class="action-info" id="action-info">
+                        第1年 · 回合：<span id="turn-number">1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="center-content">
+                <div class="board-container">
+                    <div class="board-outer" id="board-outer">
+                        <div class="road-track">
+                            <div class="road-segment road-top road-h"></div>
+                            <div class="road-segment road-bottom road-h"></div>
+                            <div class="road-segment road-left road-v"></div>
+                            <div class="road-segment road-right road-v"></div>
+                        </div>
+                        <div class="board-inner">
+                            <div class="board" id="board"></div>
+                        </div>
+                        <div class="player-marker player1" id="marker1">🚗</div>
+                        <div class="player-marker player2" id="marker2">🚙</div>
+                        <div class="overlay-text" id="overlay-text"></div>
+                        <div class="dice-overlay" id="dice-overlay">
+                            <div class="dice-container">
+                                <div class="dice" id="dice1">🎲</div>
+                                <div class="dice" id="dice2">🎲</div>
+                            </div>
+                            <div class="dice-result" id="dice-result"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="news-ticker" onclick="showNewsHistory()">
+                    <div class="ticker-label">
+                        <span>📢 产业动态</span>
+                        <span class="ticker-hint">点击查看历史</span>
+                    </div>
+                    <div class="ticker-content">
+                        <span class="ticker-text" id="ticker-text">欢迎来到新能源汽车专利竞争世界！游戏开始，绿能科技先手行动。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-panel">
+            <div class="bottom-tabs">
+                <button class="tab-btn" onclick="switchTab('rules')">📖 行业指南</button>
+                <button class="tab-btn" onclick="switchTab('settings')">⚙️ 系统设置</button>
+            </div>
+
+            <div class="tab-content" id="tab-rules">
+                <div class="rules-section">
+                    <h3>🎮 游戏概述</h3>
+                    <p>本游戏模拟新能源汽车产业专利竞争，玩家通过研发投入、专利布局、许可收费等策略争夺市场主导权。</p>
+                </div>
+
+                <div class="rules-section">
+                    <h3>💰 专利获取</h3>
+                    <p>首次停留在无主技术地块时可获得专利：</p>
+                    <div class="formula" id="rule-patent-cost">总成本 = 研发费用 + 专利申请费(固定2万)</div>
+                    <p>研发费用根据技术难度呈正态分布。</p>
+                </div>
+
+                <div class="rules-section">
+                    <h3>📊 许可收费</h3>
+                    <p>对手停留在你的专利地块时需支付许可费：</p>
+                    <div class="formula" id="rule-license">许可费 = 研发费 × 10%</div>
+                </div>
+
+                <div class="rules-section">
+                    <h3>📈 财年结算（经过起点）</h3>
+                    <ul>
+                        <li id="rule-rnd">研发经营收益：累计研发费 × 7%</li>
+                        <li id="rule-maint">专利维护年费：专利总价值 × 5%</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <h3>⚔️ 专利无效宣告</h3>
+                    <p>踩中对手地块可发起无效宣告：</p>
+                    <ul>
+                        <li id="rule-invalid-cost">成本：目标专利价值 × 30%</li>
+                        <li id="rule-invalid-rate">成功率：25%</li>
+                        <li>成功：专利失效，地块自由通行</li>
+                        <li>失败：损失诉讼费</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🏢 TPO机制</h3>
+                    <p>资金不足破产清算时，可出售专利给TPO：</p>
+                    <ul>
+                        <li id="rule-tpo-sell">出售价格：原始购入价 × 80%</li>
+                        <li id="rule-tpo-fee">TPO专利：所有玩家经过需支付基础价值×15%</li>
+                        <li id="rule-tpo-life">有效期：10回合后失效</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <h3>⏰ 专利悬崖</h3>
+                    <p id="rule-cliff">每个专利最多收取10次许可费，期满后进入公有领域。</p>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🏆 胜利条件</h3>
+                    <p>现金≤0且无可出售专利时破产，最后存活者获胜。</p>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🔧 技术赛道</h3>
+                    <ul>
+                        <li><span class="tech-category tech-battery">三电系统</span> 电池、电机、电控</li>
+                        <li><span class="tech-category tech-driving">智能驾驶</span> 感知、决策、控制</li>
+                        <li><span class="tech-category tech-cabin">智能座舱</span> 交互、娱乐、舒适</li>
+                        <li><span class="tech-category tech-platform">整车平台</span> 架构、底盘、安全</li>
+                        <li><span class="tech-category tech-charging">充电能源</span> 充电、换电、储能</li>
+                    </ul>
+                </div>
+
+                <div class="copyright">
+                    合肥工业大学知识产权信息服务中心出品
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-settings">
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <div class="setting-label">专利申请费</div>
+                        <div class="setting-desc">获取专利的固定申请费用</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-patent-fee" min="0" step="1">
+                            <span class="setting-unit">万</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">许可费率</div>
+                        <div class="setting-desc">对手停留时支付的费率</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-license-rate" min="0" max="100" step="1">
+                            <span class="setting-unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">研发收益率</div>
+                        <div class="setting-desc">经过起点时的研发收益</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-rnd-return" min="0" max="100" step="1">
+                            <span class="setting-unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">维护费率</div>
+                        <div class="setting-desc">专利年费占资产比例</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-maintenance" min="0" max="100" step="1">
+                            <span class="setting-unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">无效成本率</div>
+                        <div class="setting-desc">发起无效宣告的成本比例</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-invalid-cost" min="0" max="100" step="1">
+                            <span class="setting-unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">无效成功率</div>
+                        <div class="setting-desc">无效宣告成功的概率</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-invalid-rate" min="0" max="100" step="1">
+                            <span class="setting-unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">TPO出售率</div>
+                        <div class="setting-desc">出售给TPO的价格比例</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-tpo-sell" min="0" max="100" step="1">
+                            <span class="setting-unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">TPO过路费率</div>
+                        <div class="setting-desc">TPO专利的过路费比例</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-tpo-fee" min="0" max="100" step="1">
+                            <span class="setting-unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">TPO有效期</div>
+                        <div class="setting-desc">TPO持有专利的回合数</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-tpo-life" min="1" step="1">
+                            <span class="setting-unit">回合</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">最大许可次数</div>
+                        <div class="setting-desc">专利可收取许可费的次数</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-max-uses" min="1" step="1">
+                            <span class="setting-unit">次</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-label">玩家初始资金</div>
+                        <div class="setting-desc">每位玩家的起始现金</div>
+                        <div class="setting-input-row">
+                            <input type="number" class="setting-input" id="set-init-cash" min="1000" step="1000">
+                            <span class="setting-unit">万</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-buttons">
+                    <button class="btn btn-secondary" onclick="resetSettings()">恢复默认</button>
+                    <button class="btn btn-primary" onclick="applySettings()">应用设置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal">
+            <h3 id="modal-title">提示</h3>
+            <p id="modal-content">内容</p>
+            <div class="modal-buttons" id="modal-buttons"></div>
+        </div>
+    </div>
+
+    <script>
+        const AUDIO_CTX = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            const oscillator = AUDIO_CTX.createOscillator();
+            const gainNode = AUDIO_CTX.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(AUDIO_CTX.destination);
+            
+            switch(type) {
+                case 'click':
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.06, AUDIO_CTX.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, AUDIO_CTX.currentTime + 0.1);
+                    oscillator.start(AUDIO_CTX.currentTime);
+                    oscillator.stop(AUDIO_CTX.currentTime + 0.1);
+                    break;
+                case 'income':
+                    oscillator.frequency.value = 523;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.06, AUDIO_CTX.currentTime);
+                    oscillator.start(AUDIO_CTX.currentTime);
+                    setTimeout(() => oscillator.frequency.value = 659, 100);
+                    setTimeout(() => oscillator.frequency.value = 784, 200);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, AUDIO_CTX.currentTime + 0.3);
+                    oscillator.stop(AUDIO_CTX.currentTime + 0.3);
+                    break;
+                case 'pay':
+                    oscillator.frequency.value = 300;
+                    oscillator.type = 'sawtooth';
+                    gainNode.gain.setValueAtTime(0.05, AUDIO_CTX.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, AUDIO_CTX.currentTime + 0.2);
+                    oscillator.start(AUDIO_CTX.currentTime);
+                    oscillator.stop(AUDIO_CTX.currentTime + 0.2);
+                    break;
+                case 'success':
+                    oscillator.frequency.value = 880;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.06, AUDIO_CTX.currentTime);
+                    oscillator.start(AUDIO_CTX.currentTime);
+                    setTimeout(() => oscillator.frequency.value = 1100, 100);
+                    setTimeout(() => oscillator.frequency.value = 1320, 200);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, AUDIO_CTX.currentTime + 0.4);
+                    oscillator.stop(AUDIO_CTX.currentTime + 0.4);
+                    break;
+                case 'fail':
+                    oscillator.frequency.value = 200;
+                    oscillator.type = 'square';
+                    gainNode.gain.setValueAtTime(0.04, AUDIO_CTX.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, AUDIO_CTX.currentTime + 0.3);
+                    oscillator.start(AUDIO_CTX.currentTime);
+                    oscillator.stop(AUDIO_CTX.currentTime + 0.3);
+                    break;
+            }
+        }
+
+        const TECH_DATA = [
+            { id: 0, name: '起点', icon: '🏁', type: 'special', isStart: true },
+            { id: 1, name: '固态电池', icon: '🔋', type: 'battery', baseDevCost: 800 },
+            { id: 2, name: '三元锂电', icon: '⚡', type: 'battery', baseDevCost: 600 },
+            { id: 3, name: '永磁电机', icon: '⚙️', type: 'battery', baseDevCost: 500 },
+            { id: 4, name: '激光雷达', icon: '📡', type: 'driving', baseDevCost: 900 },
+            { id: 5, name: '毫米波雷达', icon: '📶', type: 'driving', baseDevCost: 550 },
+            { id: 6, name: '视觉感知', icon: '👁️', type: 'driving', baseDevCost: 700 },
+            { id: 7, name: '决策算法', icon: '🧠', type: 'driving', baseDevCost: 850 },
+            { id: 8, name: '语音交互', icon: '🎤', type: 'cabin', baseDevCost: 400 },
+            { id: 9, name: 'HUD显示', icon: '🖥️', type: 'cabin', baseDevCost: 350 },
+            { id: 10, name: '智能座椅', icon: '🪑', type: 'cabin', baseDevCost: 300 },
+            { id: 11, name: '专利奖励', icon: '🎁', type: 'bonus', isBonus: true, bonusAmount: 1000 },
+            { id: 12, name: '车身架构', icon: '🏗️', type: 'platform', baseDevCost: 650 },
+            { id: 13, name: '安全系统', icon: '🛡️', type: 'platform', baseDevCost: 550 },
+            { id: 14, name: '超级快充', icon: '⚡', type: 'charging', baseDevCost: 600 },
+            { id: 15, name: '换电技术', icon: '🔄', type: 'charging', baseDevCost: 550 },
+            { id: 16, name: '专利流氓', icon: '😈', type: 'troll', isTroll: true, trollAmount: 1000 },
+            { id: 17, name: '热管理', icon: '🌡️', type: 'battery', baseDevCost: 420 },
+            { id: 18, name: 'BMS系统', icon: '📊', type: 'battery', baseDevCost: 480 },
+            { id: 19, name: '高精地图', icon: '🗺️', type: 'driving', baseDevCost: 600 },
+            { id: 20, name: '车路协同', icon: '🚦', type: 'driving', baseDevCost: 720 },
+            { id: 21, name: 'AR导航', icon: '🥽', type: 'cabin', baseDevCost: 450 },
+            { id: 22, name: '空气悬架', icon: '🎈', type: 'platform', baseDevCost: 520 }
+        ];
+
+        const DEFAULT_CONFIG = {
+            PATENT_APP_FEE: 2,
+            LICENSE_RATE: 0.10,
+            RND_RETURN_RATE: 0.07,
+            MAINTENANCE_RATE: 0.05,
+            INVALID_SUCCESS_RATE: 0.25,
+            INVALID_COST_RATE: 0.30,
+            TPO_SELL_RATE: 0.80,
+            TPO_FEE_RATE: 0.15,
+            MAX_LICENSE_USES: 10,
+            TPO_LIFETIME: 10,
+            INITIAL_CASH: 10000
+        };
+
+        let config = { ...DEFAULT_CONFIG };
+
+        const BOARD_COLS = 10;
+        const BOARD_ROWS = 3;
+        const ROAD_WIDTH = 38;
+        
+        const CELL_POSITIONS = [];
+        
+        (function initCellPositions() {
+            for (let i = 0; i < BOARD_COLS; i++) CELL_POSITIONS.push({ row: 2, col: i });
+            for (let i = BOARD_ROWS - 2; i >= 0; i--) CELL_POSITIONS.push({ row: i, col: BOARD_COLS - 1 });
+            for (let i = BOARD_COLS - 2; i >= 0; i--) CELL_POSITIONS.push({ row: 0, col: i });
+            for (let i = 1; i <= BOARD_ROWS - 2; i++) CELL_POSITIONS.push({ row: i, col: 0 });
+        })();
+        
+        const TOTAL_CELLS = CELL_POSITIONS.length;
+
+        let gameState = {
+            currentPlayer: 0,
+            turnNumber: 1,
+            year: 1,
+            players: [
+                {
+                    id: 0,
+                    name: '绿能科技',
+                    cash: 10000,
+                    position: 0,
+                    patents: [],
+                    totalDevCost: 0,
+                    roundIncome: 0,
+                    passedStart: false,
+                    lapsCompleted: 0,
+                    ledger: []
+                },
+                {
+                    id: 1,
+                    name: '智驾集团',
+                    cash: 10000,
+                    position: 0,
+                    patents: [],
+                    totalDevCost: 0,
+                    roundIncome: 0,
+                    passedStart: false,
+                    lapsCompleted: 0,
+                    ledger: []
+                }
+            ],
+            cells: [],
+            news: [],
+            gameOver: false,
+            isMoving: false,
+            hasRolled: false
+        };
+
+        function generateDevCost(baseCost) {
+            const variation = baseCost * 0.2;
+            const u1 = Math.random();
+            const u2 = Math.random();
+            const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+            return Math.round(baseCost + z * variation * 0.5);
+        }
+
+        function initGame() {
+            console.log('TECH_DATA length:', TECH_DATA.length);
+            console.log('CELL_POSITIONS length:', CELL_POSITIONS.length);
+            console.log('TOTAL_CELLS:', TOTAL_CELLS);
+            
+            gameState.cells = TECH_DATA.map((tech, index) => {
+                if (tech.isStart) {
+                    return { ...tech, owner: null, devCost: 0, totalValue: 0, isTPO: false, tpoTurns: 0, patentLife: 0, expired: false, invalidated: false };
+                }
+                const devCost = generateDevCost(tech.baseDevCost);
+                return {
+                    ...tech,
+                    owner: null,
+                    devCost: devCost,
+                    totalValue: devCost + config.PATENT_APP_FEE,
+                    isTPO: false,
+                    tpoTurns: 0,
+                    patentLife: 10,
+                    expired: false,
+                    invalidated: false
+                };
+            });
+            
+            gameState.players.forEach(p => {
+                p.cash = config.INITIAL_CASH;
+                p.patents = [];
+                p.totalDevCost = 0;
+                p.roundIncome = 0;
+                p.position = 0;
+                p.passedStart = false;
+                p.lapsCompleted = 0;
+                p.ledger = [];
+            });
+            
+            gameState.currentPlayer = 0;
+            gameState.turnNumber = 1;
+            gameState.year = 1;
+            gameState.gameOver = false;
+            gameState.isMoving = false;
+            gameState.hasRolled = false;
+            gameState.news = [];
+            
+            renderBoard();
+            updateUI();
+            updateMarkers();
+            updateRulesDisplay();
+            loadSettingsToPanel();
+            showActionButtons(['roll']);
+        }
+
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            
+            const cellMap = new Map();
+            CELL_POSITIONS.forEach((pos, index) => {
+                cellMap.set(`${pos.row}-${pos.col}`, index);
+            });
+            
+            for (let row = 0; row < BOARD_ROWS; row++) {
+                for (let col = 0; col < BOARD_COLS; col++) {
+                    const cell = document.createElement('div');
+                    const key = `${row}-${col}`;
+                    const cellIndex = cellMap.get(key);
+                    
+                    if (cellIndex !== undefined) {
+                        const cellData = gameState.cells[cellIndex];
+                        cell.className = 'cell';
+                        cell.dataset.index = cellIndex;
+                        
+                        if (cellData.isStart) {
+                            cell.classList.add('start');
+                        } else if (cellData.isBonus) {
+                            cell.classList.add('bonus');
+                        } else if (cellData.isTroll) {
+                            cell.classList.add('troll');
+                        } else if (cellData.invalidated) {
+                            cell.classList.add('invalidated');
+                        } else if (cellData.expired) {
+                            cell.classList.add('expired');
+                        } else if (cellData.isTPO) {
+                            cell.classList.add('tpo-owned');
+                        } else if (cellData.owner === 0) {
+                            cell.classList.add('player1-owned');
+                        } else if (cellData.owner === 1) {
+                            cell.classList.add('player2-owned');
+                        }
+                        
+                        let categoryClass = '';
+                        if (cellData.type === 'battery') categoryClass = 'tech-battery';
+                        else if (cellData.type === 'driving') categoryClass = 'tech-driving';
+                        else if (cellData.type === 'cabin') categoryClass = 'tech-cabin';
+                        else if (cellData.type === 'platform') categoryClass = 'tech-platform';
+                        else if (cellData.type === 'charging') categoryClass = 'tech-charging';
+                        else if (cellData.type === 'troll') categoryClass = 'tech-troll';
+                        
+                        cell.innerHTML = `
+                            ${!cellData.isStart && !cellData.isBonus && !cellData.isTroll && cellData.icon ? `<span class="cell-icon-bg">${cellData.icon}</span>` : ''}
+                            <div class="cell-content">
+                                ${categoryClass ? `<span class="tech-category ${categoryClass}">${getCategoryName(cellData.type)}</span>` : ''}
+                                <div class="cell-name">${cellData.name}</div>
+                                ${!cellData.isStart && !cellData.isBonus && !cellData.isTroll ? `<div class="cell-price">¥${cellData.devCost}万</div>` : ''}
+                                ${cellData.isBonus ? `<div class="cell-price bonus-price">+¥${cellData.bonusAmount}万</div>` : ''}
+                                ${cellData.isTroll ? `<div class="cell-price troll-price">-¥${cellData.trollAmount}万</div>` : ''}
+                            </div>
+                            ${cellData.invalidated ? `<span class="cell-badge invalidated-badge">无效</span>` : ''}
+                            ${cellData.expired ? `<span class="cell-badge expired-badge">期满</span>` : ''}
+                            ${cellData.owner !== null && !cellData.isTPO && !cellData.expired && !cellData.invalidated ? `<span class="cell-badge">P${cellData.owner + 1}</span>` : ''}
+                            ${cellData.isTPO ? `<span class="cell-badge" style="background:#FBC02D;color:#000">TPO</span>` : ''}
+                            ${cellData.owner !== null && !cellData.isStart && !cellData.isTPO && !cellData.expired && !cellData.invalidated ? `<span class="cell-life" title="专利有效期">${cellData.patentLife}年</span>` : ''}
+                        `;
+                        
+                        cell.onclick = () => showCellInfo(cellIndex);
+                    } else {
+                        cell.className = 'cell empty';
+                    }
+                    
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function getCategoryName(type) {
+            const names = {
+                'battery': '三电',
+                'driving': '智驾',
+                'cabin': '座舱',
+                'platform': '平台',
+                'charging': '充电',
+                'bonus': '奖励',
+                'troll': '风险'
+            };
+            return names[type] || '';
+        }
+
+        function updateMarkers() {
+            const boardOuter = document.getElementById('board-outer');
+            if (!boardOuter) return;
+            
+            const outerRect = boardOuter.getBoundingClientRect();
+            const boardInner = document.querySelector('.board-inner');
+            const innerRect = boardInner.getBoundingClientRect();
+            
+            const innerWidth = innerRect.width;
+            const innerHeight = innerRect.height;
+            
+            const cellWidth = innerWidth / BOARD_COLS;
+            const cellHeight = innerHeight / BOARD_ROWS;
+            
+            const offsetX = innerRect.left - outerRect.left;
+            const offsetY = innerRect.top - outerRect.top;
+            
+            gameState.players.forEach((player, index) => {
+                const marker = document.getElementById(`marker${index + 1}`);
+                const pos = CELL_POSITIONS[player.position];
+                
+                if (!pos) return;
+                
+                let x, y;
+                const halfRoad = ROAD_WIDTH / 2;
+                const offset = (index === 0 ? -7 : 7);
+                
+                if (pos.row === BOARD_ROWS - 1) {
+                    x = offsetX + pos.col * cellWidth + cellWidth / 2;
+                    y = outerRect.height - halfRoad + offset;
+                } else if (pos.col === BOARD_COLS - 1) {
+                    x = outerRect.width - halfRoad + offset;
+                    y = offsetY + pos.row * cellHeight + cellHeight / 2;
+                } else if (pos.row === 0) {
+                    x = offsetX + pos.col * cellWidth + cellWidth / 2;
+                    y = halfRoad + offset;
+                } else {
+                    x = halfRoad + offset;
+                    y = offsetY + pos.row * cellHeight + cellHeight / 2;
+                }
+                
+                marker.style.left = `${x}px`;
+                marker.style.top = `${y}px`;
+                marker.style.transform = 'translate(-50%, -50%)';
+            });
+        }
+
+        function updateUI() {
+            gameState.players.forEach((player, index) => {
+                const prefix = `player${index + 1}`;
+                document.getElementById(`${prefix}-cash`).textContent = `¥${player.cash.toLocaleString()}万`;
+                document.getElementById(`${prefix}-patents`).textContent = `${player.patents.length}项`;
+                document.getElementById(`${prefix}-assets`).textContent = `¥${calculatePlayerAssets(index).toLocaleString()}万`;
+                
+                const roundEl = document.getElementById(`${prefix}-round`);
+                const roundValue = player.roundIncome;
+                roundEl.textContent = `${roundValue >= 0 ? '+' : ''}¥${roundValue.toLocaleString()}万`;
+                roundEl.className = `stat-value ${roundValue >= 0 ? 'positive' : 'negative'}`;
+                
+                const card = document.getElementById(`${prefix}-card`);
+                card.classList.toggle('active', gameState.currentPlayer === index);
+            });
+            
+            const indicator = document.getElementById('turn-indicator');
+            indicator.style.background = gameState.currentPlayer === 0 ? 'var(--player1-color)' : 'var(--player2-color)';
+            
+            const currentPlayer = gameState.players[gameState.currentPlayer];
+            document.getElementById('header-turn-info').textContent = `第${gameState.year}年 · 回合 ${gameState.turnNumber} - ${currentPlayer.name}`;
+            
+            const turnNumberEl = document.getElementById('turn-number');
+            if (turnNumberEl) {
+                turnNumberEl.textContent = gameState.turnNumber;
+            }
+        }
+
+        function calculatePlayerAssets(playerIndex) {
+            return gameState.players[playerIndex].patents.reduce((sum, cellIndex) => {
+                return sum + gameState.cells[cellIndex].totalValue;
+            }, 0);
+        }
+
+        function rollDice() {
+            if (gameState.isMoving || gameState.hasRolled || gameState.gameOver) return;
+            
+            playSound('click');
+            gameState.hasRolled = true;
+            
+            const dice1 = Math.floor(Math.random() * 6) + 1;
+            const dice2 = Math.floor(Math.random() * 6) + 1;
+            const total = dice1 + dice2;
+            
+            const diceOverlay = document.getElementById('dice-overlay');
+            const dice1El = document.getElementById('dice1');
+            const dice2El = document.getElementById('dice2');
+            const diceResult = document.getElementById('dice-result');
+            
+            diceOverlay.classList.add('show');
+            dice1El.classList.remove('stopped');
+            dice2El.classList.remove('stopped');
+            diceResult.classList.remove('show');
+            
+            const diceSymbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            let rollCount = 0;
+            const maxRolls = 15;
+            
+            const rollInterval = setInterval(() => {
+                dice1El.textContent = diceSymbols[Math.floor(Math.random() * 6)];
+                dice2El.textContent = diceSymbols[Math.floor(Math.random() * 6)];
+                rollCount++;
+                
+                if (rollCount >= maxRolls) {
+                    clearInterval(rollInterval);
+                    dice1El.textContent = diceSymbols[dice1 - 1];
+                    dice2El.textContent = diceSymbols[dice2 - 1];
+                    dice1El.classList.add('stopped');
+                    dice2El.classList.add('stopped');
+                    
+                    setTimeout(() => {
+                        diceResult.textContent = `${dice1} + ${dice2} = ${total}`;
+                        diceResult.classList.add('show');
+                        playSound('success');
+                    }, 200);
+                    
+                    setTimeout(() => {
+                        diceOverlay.classList.remove('show');
+                        document.getElementById('turn-info').innerHTML = `掷出 <strong>${dice1}</strong> + <strong>${dice2}</strong> = <strong>${total}</strong>，正在移动...`;
+                        movePlayer(total);
+                    }, 1200);
+                }
+            }, 80);
+        }
+
+        function showOverlay(text) {
+            const overlay = document.getElementById('overlay-text');
+            overlay.textContent = text;
+            overlay.classList.add('show');
+            setTimeout(() => overlay.classList.remove('show'), 1500);
+        }
+
+        function showTransactionAnimation(amount, isIncome, targetElement) {
+            const anim = document.createElement('div');
+            anim.className = `transaction-animation ${isIncome ? 'income' : 'expense'}`;
+            anim.textContent = `${isIncome ? '+' : '-'}¥${Math.abs(amount)}万`;
+            
+            if (targetElement) {
+                const rect = targetElement.getBoundingClientRect();
+                anim.style.left = `${rect.left + rect.width / 2}px`;
+                anim.style.top = `${rect.top}px`;
+            } else {
+                anim.style.left = '50%';
+                anim.style.top = '50%';
+                anim.style.transform = 'translateX(-50%)';
+            }
+            
+            document.body.appendChild(anim);
+            
+            setTimeout(() => anim.remove(), 1500);
+        }
+
+        function showCoinBurst(x, y, count = 8) {
+            const burst = document.createElement('div');
+            burst.className = 'coin-burst';
+            burst.style.left = `${x}px`;
+            burst.style.top = `${y}px`;
+            
+            for (let i = 0; i < count; i++) {
+                const coin = document.createElement('span');
+                coin.className = 'coin-particle';
+                coin.textContent = '💰';
+                const angle = (i / count) * 360;
+                const distance = 50 + Math.random() * 30;
+                const tx = Math.cos(angle * Math.PI / 180) * distance;
+                const ty = Math.sin(angle * Math.PI / 180) * distance;
+                coin.style.setProperty('--tx', `${tx}px`);
+                coin.style.setProperty('--ty', `${ty}px`);
+                burst.appendChild(coin);
+            }
+            
+            document.body.appendChild(burst);
+            setTimeout(() => burst.remove(), 800);
+        }
+
+        async function movePlayer(steps) {
+            gameState.isMoving = true;
+            const player = gameState.players[gameState.currentPlayer];
+            
+            console.log('movePlayer - steps:', steps, 'currentPosition:', player.position, 'TOTAL_CELLS:', TOTAL_CELLS, 'cells length:', gameState.cells.length);
+            
+            const cornerPositions = [9, 11, 20, 21];
+            
+            for (let i = 0; i < steps; i++) {
+                const oldPosition = player.position;
+                const isOldCorner = cornerPositions.includes(oldPosition);
+                
+                player.position = (player.position + 1) % TOTAL_CELLS;
+                
+                console.log('movePlayer step', i + 1, '- oldPosition:', oldPosition, 'newPosition:', player.position);
+                
+                if (isOldCorner) {
+                    const oldPos = CELL_POSITIONS[oldPosition];
+                    const newPos = CELL_POSITIONS[player.position];
+                    
+                    if (oldPos && newPos) {
+                        const midX = oldPos.col === newPos.col ? 
+                            (oldPos.col * (document.querySelector('.board-inner').getBoundingClientRect().width / BOARD_COLS) + document.querySelector('.board-inner').getBoundingClientRect().width / BOARD_COLS / 2) :
+                            (oldPos.col < newPos.col ? 
+                                (newPos.col * (document.querySelector('.board-inner').getBoundingClientRect().width / BOARD_COLS)) :
+                                (oldPos.col * (document.querySelector('.board-inner').getBoundingClientRect().width / BOARD_COLS)));
+                        
+                        const midY = oldPos.row === newPos.row ?
+                            (oldPos.row * (document.querySelector('.board-inner').getBoundingClientRect().height / BOARD_ROWS) + document.querySelector('.board-inner').getBoundingClientRect().height / BOARD_ROWS / 2) :
+                            (oldPos.row < newPos.row ?
+                                (newPos.row * (document.querySelector('.board-inner').getBoundingClientRect().height / BOARD_ROWS)) :
+                                (oldPos.row * (document.querySelector('.board-inner').getBoundingClientRect().height / BOARD_ROWS)));
+                        
+                        const marker = document.getElementById(`marker${gameState.currentPlayer + 1}`);
+                        const boardOuter = document.getElementById('board-outer');
+                        const outerRect = boardOuter.getBoundingClientRect();
+                        const halfRoad = ROAD_WIDTH / 2;
+                        const offset = (gameState.currentPlayer === 0 ? -7 : 7);
+                        
+                        const cornerX = oldPos.col === BOARD_COLS - 1 ? outerRect.width - halfRoad + offset : 
+                                       oldPos.col === 0 ? halfRoad + offset :
+                                       (oldPos.col * (outerRect.width - ROAD_WIDTH * 2) / (BOARD_COLS - 1) + ROAD_WIDTH);
+                        const cornerY = oldPos.row === BOARD_ROWS - 1 ? outerRect.height - halfRoad + offset :
+                                       oldPos.row === 0 ? halfRoad + offset :
+                                       (oldPos.row * (outerRect.height - ROAD_WIDTH * 2) / (BOARD_ROWS - 1) + ROAD_WIDTH);
+                        
+                        marker.style.left = `${cornerX}px`;
+                        marker.style.top = `${cornerY}px`;
+                        await sleep(100);
+                    }
+                }
+                
+                if (player.position === 0 && oldPosition !== 0) {
+                    player.passedStart = true;
+                    player.lapsCompleted++;
+                    
+                    if (player.id === 0) {
+                        handleYearChange();
+                    }
+                }
+                
+                updateMarkers();
+                await sleep(180);
+            }
+            
+            renderBoard();
+            
+            setTimeout(() => {
+                handleCellLanding();
+            }, 300);
+        }
+
+        function handleYearChange() {
+            gameState.year++;
+            
+            gameState.cells.forEach(cell => {
+                if (cell.owner !== null && !cell.isStart && !cell.expired) {
+                    cell.patentLife--;
+                    
+                    if (cell.patentLife <= 0) {
+                        const owner = gameState.players[cell.owner];
+                        const patentIndex = owner.patents.indexOf(cell.id);
+                        if (patentIndex > -1) {
+                            owner.patents.splice(patentIndex, 1);
+                        }
+                        
+                        addNews(`📅 ${cell.name}专利有效期届满，已成为公有技术`);
+                        cell.expired = true;
+                    }
+                }
+            });
+            
+            addNews(`🗓️ 第${gameState.year}年开始！所有专利有效期减少1年`);
+            playSound('income');
+            
+            updateUI();
+            renderBoard();
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function handleCellLanding() {
+            const player = gameState.players[gameState.currentPlayer];
+            const cell = gameState.cells[player.position];
+            
+            console.log('handleCellLanding - position:', player.position, 'cell:', cell, 'cells length:', gameState.cells.length, 'TOTAL_CELLS:', TOTAL_CELLS);
+            
+            if (!cell) {
+                console.error('Cell is undefined! position:', player.position);
+                document.getElementById('turn-info').innerHTML = `
+                    <span style="color:#E53935">错误：地块数据丢失，请刷新页面重新开始游戏。</span>
+                `;
+                gameState.isMoving = false;
+                return;
+            }
+            
+            if (player.passedStart) {
+                handleYearEndSettlement();
+                player.passedStart = false;
+            }
+            
+            if (cell.isStart) {
+                const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+                document.getElementById('turn-info').innerHTML = `
+                    停留在起点，准备下一轮投资！<br>
+                    <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+                `;
+                gameState.isMoving = false;
+                setTimeout(() => {
+                    endTurn();
+                }, 1000);
+                return;
+            }
+            
+            if (cell.isBonus) {
+                const bonusAmount = cell.bonusAmount;
+                player.cash += bonusAmount;
+                player.roundIncome += bonusAmount;
+                const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+                document.getElementById('turn-info').innerHTML = `
+                    <strong>🎁 ${cell.name}</strong><br>
+                    恭喜获得专利奖励金 <span style="color:var(--player1-color);font-weight:600">¥${bonusAmount}万</span>！<br>
+                    <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+                `;
+                addNews(`🎁 ${player.name}获得${cell.name}¥${bonusAmount}万`);
+                addLedgerEntry(gameState.currentPlayer, 'income', `获得${cell.name}`, bonusAmount);
+                playSound('income');
+                
+                const cashEl = document.getElementById(`player${gameState.currentPlayer + 1}-cash`);
+                showTransactionAnimation(bonusAmount, true, cashEl);
+                const boardOuter = document.getElementById('board-outer');
+                const rect = boardOuter.getBoundingClientRect();
+                showCoinBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                
+                updateUI();
+                gameState.isMoving = false;
+                setTimeout(() => {
+                    endTurn();
+                }, 1500);
+                return;
+            }
+            
+            if (cell.isTroll) {
+                const trollAmount = cell.trollAmount;
+                player.cash -= trollAmount;
+                player.roundIncome -= trollAmount;
+                const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+                document.getElementById('turn-info').innerHTML = `
+                    <strong>😈 ${cell.name}</strong><br>
+                    遭遇专利流氓诉讼，损失 <span style="color:#E53935;font-weight:600">¥${trollAmount}万</span>！<br>
+                    <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+                `;
+                addNews(`😈 ${player.name}遭遇${cell.name}，损失¥${trollAmount}万`);
+                addLedgerEntry(gameState.currentPlayer, 'expense', `遭遇${cell.name}诉讼`, -trollAmount);
+                playSound('expense');
+                
+                const cashEl = document.getElementById(`player${gameState.currentPlayer + 1}-cash`);
+                showTransactionAnimation(trollAmount, false, cashEl);
+                
+                updateUI();
+                gameState.isMoving = false;
+                setTimeout(() => {
+                    endTurn();
+                }, 1500);
+                return;
+            }
+            
+            if (cell.isTPO) {
+                handleTPOLanding();
+                return;
+            }
+            
+            if (cell.expired) {
+                const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+                document.getElementById('turn-info').innerHTML = `
+                    <strong>${cell.name}</strong><br>
+                    该技术已成为公有技术，免费通行！<br>
+                    <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+                `;
+                gameState.isMoving = false;
+                setTimeout(() => {
+                    endTurn();
+                }, 1000);
+                return;
+            }
+            
+            if (cell.invalidated) {
+                const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+                document.getElementById('turn-info').innerHTML = `
+                    <strong>${cell.name}</strong><br>
+                    该技术已被无效宣告，成为公有技术，免费通行！<br>
+                    <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+                `;
+                gameState.isMoving = false;
+                setTimeout(() => {
+                    endTurn();
+                }, 1000);
+                return;
+            }
+            
+            if (cell.owner === null) {
+                handleEmptyCell();
+            } else if (cell.owner !== gameState.currentPlayer) {
+                handleOpponentCell();
+            } else {
+                const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+                document.getElementById('turn-info').innerHTML = `
+                    停留在自己的专利地块，无需支付费用。<br>
+                    <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+                `;
+                gameState.isMoving = false;
+                setTimeout(() => {
+                    endTurn();
+                }, 1000);
+            }
+        }
+
+        function handleYearEndSettlement() {
+            const player = gameState.players[gameState.currentPlayer];
+            const assets = calculatePlayerAssets(gameState.currentPlayer);
+            
+            const rndReturn = Math.round(player.totalDevCost * config.RND_RETURN_RATE);
+            const maintenance = Math.round(assets * config.MAINTENANCE_RATE);
+            
+            player.cash += rndReturn - maintenance;
+            player.roundIncome += rndReturn - maintenance;
+            
+            addNews(`${player.name}财年结算：研发收益+¥${rndReturn}万，维护费-¥${maintenance}万`);
+            
+            if (rndReturn > 0) {
+                addLedgerEntry(gameState.currentPlayer, 'income', `财年结算：研发经营收益`, rndReturn);
+            }
+            if (maintenance > 0) {
+                addLedgerEntry(gameState.currentPlayer, 'expense', `财年结算：专利维护年费`, -maintenance);
+            }
+            
+            if (rndReturn > maintenance) {
+                playSound('income');
+            } else {
+                playSound('pay');
+            }
+            
+            updateUI();
+        }
+
+        function handleEmptyCell() {
+            const player = gameState.players[gameState.currentPlayer];
+            const cell = gameState.cells[player.position];
+            
+            if (cell.owner !== null) {
+                const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+                document.getElementById('turn-info').innerHTML = `
+                    该专利已被获取！<br>
+                    <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+                `;
+                gameState.isMoving = false;
+                setTimeout(() => endTurn(), 800);
+                return;
+            }
+            
+            const totalCost = cell.devCost + config.PATENT_APP_FEE;
+            
+            document.getElementById('turn-info').innerHTML = `
+                <strong>${cell.name}</strong><br>
+                <span style="display:inline-block;margin-right:20px;">研发费用：¥${cell.devCost}万</span>
+                <span style="display:inline-block;margin-right:20px;">申请费用：¥${config.PATENT_APP_FEE}万</span>
+                <span style="display:inline-block;">总计：¥${totalCost}万</span>
+            `;
+            
+            if (player.cash >= totalCost) {
+                showActionButtons(['buy', 'skip']);
+            } else {
+                document.getElementById('turn-info').innerHTML += '<br><span style="color:#E53935">资金不足！</span>';
+                showActionButtons(['skip']);
+            }
+            
+            gameState.isMoving = false;
+        }
+
+        function handleOpponentCell() {
+            const player = gameState.players[gameState.currentPlayer];
+            const cell = gameState.cells[player.position];
+            const licenseFee = Math.round(cell.devCost * config.LICENSE_RATE);
+            
+            const invalidCost = Math.round(cell.totalValue * config.INVALID_COST_RATE);
+            const owner = gameState.players[cell.owner];
+            
+            document.getElementById('turn-info').innerHTML = `
+                <strong>${cell.name}</strong> - ${owner.name}持有<br>
+                <span style="display:inline-block;margin-right:20px;">许可费用：¥${licenseFee}万</span>
+                <span style="display:inline-block;">无效成本：¥${invalidCost}万（成功率${config.INVALID_SUCCESS_RATE * 100}%）</span>
+            `;
+            
+            const buttons = [];
+            if (player.cash >= licenseFee) {
+                buttons.push('license');
+            }
+            if (player.cash >= invalidCost) {
+                buttons.push('invalid');
+            }
+            
+            if (buttons.length === 0) {
+                document.getElementById('turn-info').innerHTML += '<br><span style="color:#E53935">资金不足，无法操作！</span>';
+                gameState.isMoving = false;
+                setTimeout(() => endTurn(), 800);
+                return;
+            }
+            
+            showActionButtons(buttons);
+            document.getElementById('action-info').innerHTML = `专利有效期：${cell.patentLife}年`;
+            
+            gameState.isMoving = false;
+        }
+
+        function payLicenseFee() {
+            console.log('payLicenseFee called');
+            try {
+                playSound('click');
+                
+                const player = gameState.players[gameState.currentPlayer];
+                const cell = gameState.cells[player.position];
+                const licenseFee = Math.round(cell.devCost * config.LICENSE_RATE);
+                
+                player.cash -= licenseFee;
+                player.roundIncome -= licenseFee;
+                
+                const owner = gameState.players[cell.owner];
+                owner.cash += licenseFee;
+                owner.roundIncome += licenseFee;
+                
+                playSound('pay');
+                
+                const playerCashEl = document.getElementById(`player${gameState.currentPlayer + 1}-cash`);
+                const ownerCashEl = document.getElementById(`player${cell.owner + 1}-cash`);
+                showTransactionAnimation(licenseFee, false, playerCashEl);
+                setTimeout(() => {
+                    showTransactionAnimation(licenseFee, true, ownerCashEl);
+                }, 300);
+                
+                addNews(`${player.name}向${owner.name}支付${cell.name}许可费¥${licenseFee}万`);
+                
+                addLedgerEntry(gameState.currentPlayer, 'expense', `支付${cell.name}许可费给${owner.name}`, -licenseFee);
+                addLedgerEntry(cell.owner, 'income', `收取${cell.name}许可费来自${player.name}`, licenseFee);
+                
+                document.getElementById('turn-info').innerHTML = `
+                    已支付许可费：¥${licenseFee}万<br>
+                    <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${gameState.players[gameState.currentPlayer === 0 ? 1 : 0].name}</span>
+                `;
+                
+                updateUI();
+                renderBoard();
+                
+                console.log('Setting timeout for endTurn in payLicenseFee');
+                setTimeout(() => {
+                    try {
+                        console.log('Timeout callback executing in payLicenseFee');
+                        endTurn();
+                    } catch (e) {
+                        console.error('Error in payLicenseFee timeout:', e);
+                    }
+                }, 1200);
+            } catch (e) {
+                console.error('Error in payLicenseFee:', e);
+            }
+        }
+
+        function handleTPOLanding() {
+            const player = gameState.players[gameState.currentPlayer];
+            const cell = gameState.cells[player.position];
+            const fee = Math.round(cell.devCost * config.TPO_FEE_RATE);
+            
+            player.cash -= fee;
+            player.roundIncome -= fee;
+            
+            playSound('pay');
+            
+            const cashEl = document.getElementById(`player${gameState.currentPlayer + 1}-cash`);
+            showTransactionAnimation(fee, false, cashEl);
+            
+            addNews(`${player.name}向TPO支付${cell.name}过路费¥${fee}万`);
+            addLedgerEntry(gameState.currentPlayer, 'expense', `向TPO支付${cell.name}过路费`, -fee);
+            
+            const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+            document.getElementById('turn-info').innerHTML = `
+                向TPO支付过路费：¥${fee}万<br>
+                <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+            `;
+            
+            updateUI();
+            gameState.isMoving = false;
+            
+            setTimeout(() => {
+                endTurn();
+            }, 1200);
+        }
+
+        function buyPatent() {
+            playSound('click');
+            
+            const player = gameState.players[gameState.currentPlayer];
+            const cell = gameState.cells[player.position];
+            
+            if (cell.owner !== null) {
+                document.getElementById('turn-info').innerHTML = `
+                    该专利已被获取！<br>
+                    <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束</span>
+                `;
+                setTimeout(() => endTurn(), 800);
+                return;
+            }
+            
+            const totalCost = cell.devCost + config.PATENT_APP_FEE;
+            
+            player.cash -= totalCost;
+            player.roundIncome -= totalCost;
+            player.totalDevCost += cell.devCost;
+            player.patents.push(player.position);
+            cell.owner = gameState.currentPlayer;
+            cell.patentLife = 10;
+            
+            playSound('success');
+            
+            const cashEl = document.getElementById(`player${gameState.currentPlayer + 1}-cash`);
+            showTransactionAnimation(totalCost, false, cashEl);
+            
+            addNews(`${player.name}获得${cell.name}专利，投入¥${totalCost}万，有效期10年`);
+            addLedgerEntry(gameState.currentPlayer, 'expense', `研发${cell.name}专利（研发费¥${cell.devCost}万+申请费¥${config.PATENT_APP_FEE}万）`, -totalCost);
+            
+            const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+            document.getElementById('turn-info').innerHTML = `
+                成功获得${cell.name}专利！<br>
+                专利有效期：10年<br>
+                <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+            `;
+            
+            updateUI();
+            renderBoard();
+            
+            setTimeout(() => {
+                endTurn();
+            }, 1200);
+        }
+
+        function skipBuy() {
+            const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+            document.getElementById('turn-info').innerHTML = `
+                放弃获取专利。<br>
+                <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+            `;
+            
+            setTimeout(() => {
+                endTurn();
+            }, 800);
+        }
+
+        function initiateInvalidation() {
+            const player = gameState.players[gameState.currentPlayer];
+            const cell = gameState.cells[player.position];
+            const invalidCost = Math.round(cell.totalValue * config.INVALID_COST_RATE);
+            
+            showModal(
+                '发起专利无效宣告',
+                `目标专利：${cell.name}<br>诉讼成本：¥${invalidCost}万<br>成功率：${config.INVALID_SUCCESS_RATE * 100}%<br><br>成功则专利永久失效，失败则损失诉讼费。`,
+                [
+                    { text: '确认发起', action: () => executeInvalidation(), primary: true },
+                    { text: '取消', action: () => { hideModal(); handleOpponentCell(); } }
+                ]
+            );
+        }
+
+        function executeInvalidation() {
+            console.log('executeInvalidation called');
+            try {
+                hideModal();
+                playSound('click');
+                
+                const player = gameState.players[gameState.currentPlayer];
+                const cell = gameState.cells[player.position];
+                const invalidCost = Math.round(cell.totalValue * config.INVALID_COST_RATE);
+                
+                player.cash -= invalidCost;
+                player.roundIncome -= invalidCost;
+                
+                addLedgerEntry(gameState.currentPlayer, 'expense', `发起${cell.name}专利无效宣告诉讼费`, -invalidCost);
+                
+                const success = Math.random() < config.INVALID_SUCCESS_RATE;
+                const nextPlayer = gameState.players[gameState.currentPlayer === 0 ? 1 : 0];
+                
+                if (success) {
+                    playSound('success');
+                    
+                    const owner = gameState.players[cell.owner];
+                    const patentIndex = owner.patents.indexOf(player.position);
+                    if (patentIndex > -1) {
+                        owner.patents.splice(patentIndex, 1);
+                    }
+                    
+                    cell.invalidated = true;
+                    
+                    addNews(`🎉 ${player.name}成功无效${cell.name}专利！该技术已无法重新申请专利`);
+                    
+                    document.getElementById('turn-info').innerHTML = `
+                        <span style="color:#00B578">无效宣告成功！专利已失效，该技术永久公有化。</span><br>
+                        <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+                    `;
+                } else {
+                    playSound('fail');
+                    
+                    addNews(`❌ ${player.name}无效${cell.name}专利失败，损失¥${invalidCost}万`);
+                    
+                    document.getElementById('turn-info').innerHTML = `
+                        <span style="color:#E53935">无效宣告失败，损失诉讼费¥${invalidCost}万。</span><br>
+                        <span style="color:var(--player${gameState.currentPlayer === 0 ? 2 : 1}-color)">回合结束，轮到${nextPlayer.name}</span>
+                    `;
+                }
+                
+                updateUI();
+                renderBoard();
+                
+                console.log('Setting timeout for endTurn in executeInvalidation');
+                setTimeout(() => {
+                    try {
+                        console.log('Timeout callback executing in executeInvalidation');
+                        endTurn();
+                    } catch (e) {
+                        console.error('Error in executeInvalidation timeout:', e);
+                    }
+                }, 1500);
+            } catch (e) {
+                console.error('Error in executeInvalidation:', e);
+            }
+        }
+
+        function endTurn() {
+            console.log('endTurn called, gameOver:', gameState.gameOver);
+            if (gameState.gameOver) return;
+            
+            console.log('Switching player from', gameState.currentPlayer, 'to', (gameState.currentPlayer + 1) % 2);
+            
+            gameState.players[gameState.currentPlayer].roundIncome = 0;
+            
+            gameState.cells.forEach(cell => {
+                if (cell.isTPO) {
+                    cell.tpoTurns++;
+                    if (cell.tpoTurns >= config.TPO_LIFETIME) {
+                        cell.isTPO = false;
+                        cell.owner = null;
+                        cell.tpoTurns = 0;
+                        addNews(`TPO持有的${cell.name}专利已到期失效`);
+                    }
+                }
+            });
+            
+            gameState.currentPlayer = (gameState.currentPlayer + 1) % 2;
+            gameState.hasRolled = false;
+            
+            if (gameState.currentPlayer === 0) {
+                gameState.turnNumber++;
+            }
+            
+            checkBankruptcy();
+            
+            console.log('After switch, currentPlayer:', gameState.currentPlayer, 'gameOver:', gameState.gameOver);
+            
+            if (!gameState.gameOver) {
+                updateUI();
+                renderBoard();
+                
+                const currentPlayer = gameState.players[gameState.currentPlayer];
+                document.getElementById('turn-info').innerHTML = `<strong style="color:var(--player${gameState.currentPlayer + 1}-color)">${currentPlayer.name}</strong>，点击"掷骰子"开始你的回合`;
+                
+                const actionInfo = document.getElementById('action-info');
+                actionInfo.innerHTML = `第${gameState.year}年 · 回合：<span id="turn-number">${gameState.turnNumber}</span>`;
+                
+                showActionButtons(['roll']);
+                console.log('endTurn completed, showing roll button for', currentPlayer.name);
+            }
+        }
+
+        function checkBankruptcy() {
+            gameState.players.forEach((player, index) => {
+                if (player.cash <= 0 && player.patents.length > 0) {
+                    handleBankruptcy(index);
+                } else if (player.cash <= 0 && player.patents.length === 0) {
+                    endGame(1 - index);
+                }
+            });
+        }
+
+        function handleBankruptcy(playerIndex) {
+            const player = gameState.players[playerIndex];
+            const patents = [...player.patents];
+            
+            let totalRecovery = 0;
+            patents.forEach(cellIndex => {
+                const cell = gameState.cells[cellIndex];
+                const recovery = Math.round(cell.totalValue * config.TPO_SELL_RATE);
+                totalRecovery += recovery;
+                
+                cell.isTPO = true;
+                cell.tpoTurns = 0;
+            });
+            
+            player.cash += totalRecovery;
+            player.patents = [];
+            
+            playSound('pay');
+            
+            addNews(`⚠️ ${player.name}资金不足，将${patents.length}项专利出售给TPO，获得¥${totalRecovery}万`);
+            
+            updateUI();
+            renderBoard();
+        }
+
+        function endGame(winnerIndex) {
+            gameState.gameOver = true;
+            
+            const winner = gameState.players[winnerIndex];
+            
+            playSound('success');
+            
+            showModal(
+                '🏆 游戏结束',
+                `<div class="game-over-modal">
+                    <div class="winner-text player${winnerIndex + 1}">${winner.name}</div>
+                    <p>成功击败对手，成为行业领导者！</p>
+                    <p>最终资金：¥${winner.cash.toLocaleString()}万</p>
+                    <p>持有专利：${winner.patents.length}项</p>
+                </div>`,
+                [
+                    { text: '重新开始', action: () => location.reload(), primary: true }
+                ]
+            );
+        }
+
+        function showActionButtons(actions) {
+            const container = document.getElementById('action-buttons');
+            container.innerHTML = '';
+            container.className = 'action-buttons';
+            
+            if (actions.length === 1) {
+                container.classList.add('single-btn');
+            } else if (actions.length === 2) {
+                container.classList.add('two-btn');
+            }
+            
+            actions.forEach(action => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                
+                switch(action) {
+                    case 'roll':
+                        btn.className += ' btn-primary';
+                        btn.innerHTML = '🎲 掷骰子';
+                        btn.addEventListener('click', rollDice);
+                        break;
+                    case 'buy':
+                        btn.className += ' btn-primary';
+                        btn.innerHTML = '💰 获取专利';
+                        btn.addEventListener('click', buyPatent);
+                        break;
+                    case 'skip':
+                        btn.className += ' btn-secondary';
+                        btn.innerHTML = '⏭️ 放弃';
+                        btn.addEventListener('click', skipBuy);
+                        break;
+                    case 'invalid':
+                        btn.className += ' btn-danger';
+                        btn.innerHTML = '⚔️ 无效宣告';
+                        btn.addEventListener('click', initiateInvalidation);
+                        break;
+                    case 'license':
+                        btn.className += ' btn-primary';
+                        btn.innerHTML = '📜 支付许可费';
+                        btn.addEventListener('click', payLicenseFee);
+                        break;
+                }
+                
+                container.appendChild(btn);
+            });
+        }
+
+        function showCellInfo(cellIndex) {
+            const cell = gameState.cells[cellIndex];
+            if (cell.isStart) return;
+            
+            let info = `<strong>${cell.icon} ${cell.name}</strong><br>`;
+            info += `类别：${getCategoryName(cell.type)}<br>`;
+            info += `研发费用：¥${cell.devCost}万<br>`;
+            info += `申请费用：¥${config.PATENT_APP_FEE}万<br>`;
+            info += `许可费率：${config.LICENSE_RATE * 100}%<br>`;
+            
+            if (cell.invalidated) {
+                info += `<br><span style="color:#757575;font-weight:600">⚠️ 专利已被无效宣告</span><br>`;
+                info += `该技术已成为公有技术，可免费使用，无法重新申请专利`;
+            } else if (cell.expired) {
+                info += `<br><span style="color:#9C27B0;font-weight:600">⚠️ 专利已期满，成为公有技术</span><br>`;
+                info += `该技术可免费使用，无法重新申请专利`;
+            } else if (cell.owner !== null && !cell.isTPO) {
+                info += `<br>持有者：${gameState.players[cell.owner].name}<br>`;
+                info += `专利有效期：<span style="color:#7B1FA2;font-weight:600">${cell.patentLife}年</span>`;
+            }
+            
+            if (cell.isTPO) {
+                info += `<br><span style="color:#F57C00">TPO持有，剩余${config.TPO_LIFETIME - cell.tpoTurns}回合</span>`;
+            }
+            
+            showModal('技术详情', info, [{ text: '关闭', action: () => hideModal() }]);
+        }
+
+        function addLedgerEntry(playerIndex, type, description, amount) {
+            const player = gameState.players[playerIndex];
+            const entry = {
+                turn: gameState.turnNumber,
+                type: type,
+                description: description,
+                amount: amount,
+                timestamp: Date.now()
+            };
+            player.ledger.unshift(entry);
+            if (player.ledger.length > 100) {
+                player.ledger.pop();
+            }
+        }
+
+        function showLedger(playerIndex) {
+            playSound('click');
+            
+            const player = gameState.players[playerIndex];
+            const ledger = player.ledger;
+            
+            let content = '<div class="ledger-tabs">';
+            content += `<button class="ledger-tab active" onclick="filterLedger(${playerIndex}, 'all')">全部</button>`;
+            content += `<button class="ledger-tab" onclick="filterLedger(${playerIndex}, 'income')">收入</button>`;
+            content += `<button class="ledger-tab" onclick="filterLedger(${playerIndex}, 'expense')">支出</button>`;
+            content += '</div>';
+            
+            content += '<div class="ledger-list" id="ledger-list">';
+            
+            if (ledger.length === 0) {
+                content += '<div class="news-empty">暂无交易记录</div>';
+            } else {
+                ledger.forEach(entry => {
+                    const isIncome = entry.amount > 0;
+                    content += `
+                        <div class="ledger-item">
+                            <div class="ledger-item-info">
+                                <div class="ledger-item-desc">${entry.description}</div>
+                                <div class="ledger-item-time">回合 ${entry.turn}</div>
+                            </div>
+                            <div class="ledger-item-amount ${isIncome ? 'income' : 'expense'}">
+                                ${isIncome ? '+' : ''}¥${entry.amount.toLocaleString()}万
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            content += '</div>';
+            
+            const totalIncome = ledger.filter(e => e.amount > 0).reduce((sum, e) => sum + e.amount, 0);
+            const totalExpense = ledger.filter(e => e.amount < 0).reduce((sum, e) => sum + Math.abs(e.amount), 0);
+            const netIncome = totalIncome - totalExpense;
+            
+            content += `
+                <div class="ledger-summary">
+                    <div class="ledger-summary-item">
+                        <div class="ledger-summary-label">总收入</div>
+                        <div class="ledger-summary-value" style="color:var(--player1-color)">+¥${totalIncome.toLocaleString()}万</div>
+                    </div>
+                    <div class="ledger-summary-item">
+                        <div class="ledger-summary-label">总支出</div>
+                        <div class="ledger-summary-value" style="color:#E53935">-¥${totalExpense.toLocaleString()}万</div>
+                    </div>
+                    <div class="ledger-summary-item">
+                        <div class="ledger-summary-label">净收益</div>
+                        <div class="ledger-summary-value" style="color:${netIncome >= 0 ? 'var(--player1-color)' : '#E53935'}">${netIncome >= 0 ? '+' : ''}¥${netIncome.toLocaleString()}万</div>
+                    </div>
+                </div>
+            `;
+            
+            showModal(`📋 ${player.name} - 账本`, content, [{ text: '关闭', action: () => hideModal() }]);
+            
+            document.getElementById('modal').classList.add('ledger-modal');
+        }
+
+        function filterLedger(playerIndex, filterType) {
+            const tabs = document.querySelectorAll('.ledger-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const player = gameState.players[playerIndex];
+            let ledger = player.ledger;
+            
+            if (filterType === 'income') {
+                ledger = ledger.filter(e => e.amount > 0);
+            } else if (filterType === 'expense') {
+                ledger = ledger.filter(e => e.amount < 0);
+            }
+            
+            const listEl = document.getElementById('ledger-list');
+            let content = '';
+            
+            if (ledger.length === 0) {
+                content = '<div class="news-empty">暂无记录</div>';
+            } else {
+                ledger.forEach(entry => {
+                    const isIncome = entry.amount > 0;
+                    content += `
+                        <div class="ledger-item">
+                            <div class="ledger-item-info">
+                                <div class="ledger-item-desc">${entry.description}</div>
+                                <div class="ledger-item-time">回合 ${entry.turn}</div>
+                            </div>
+                            <div class="ledger-item-amount ${isIncome ? 'income' : 'expense'}">
+                                ${isIncome ? '+' : ''}¥${entry.amount.toLocaleString()}万
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            listEl.innerHTML = content;
+        }
+
+        function showSellPanel(playerIndex) {
+            playSound('click');
+            
+            const player = gameState.players[playerIndex];
+            const patents = player.patents;
+            
+            if (patents.length === 0) {
+                showModal('出售专利', '您当前没有可出售的专利资产。', [{ text: '关闭', action: () => hideModal() }]);
+                return;
+            }
+            
+            let content = '<div class="sell-patent-list">';
+            
+            patents.forEach(patentIndex => {
+                const cell = gameState.cells[patentIndex];
+                const yearRate = cell.patentLife / 10;
+                const sellPrice = Math.round(cell.totalValue * config.TPO_SELL_RATE * yearRate);
+                
+                content += `
+                    <div class="sell-patent-item" onclick="confirmSellPatent(${playerIndex}, ${patentIndex})">
+                        <div class="sell-patent-info">
+                            <div class="sell-patent-name">${cell.icon} ${cell.name}</div>
+                            <div class="sell-patent-detail">原值：¥${cell.totalValue}万 | 有效期：${cell.patentLife}年</div>
+                        </div>
+                        <div class="sell-patent-price">¥${sellPrice}万</div>
+                    </div>
+                `;
+            });
+            
+            content += '</div>';
+            content += `<div class="sell-note">💡 定价公式：原值 × ${Math.round(config.TPO_SELL_RATE * 100)}% × (剩余年限/10)</div>`;
+            content += `<div class="sell-note">📌 例：原值800万，剩余6年 = 800 × 80% × 60% = ¥384万</div>`;
+            
+            showModal(`💰 出售专利 - ${player.name}`, content, [{ text: '取消', action: () => hideModal() }]);
+        }
+
+        function confirmSellPatent(playerIndex, patentIndex) {
+            const player = gameState.players[playerIndex];
+            const cell = gameState.cells[patentIndex];
+            const yearRate = cell.patentLife / 10;
+            const sellPrice = Math.round(cell.totalValue * config.TPO_SELL_RATE * yearRate);
+            const yearDiscount = Math.round((1 - yearRate) * 100);
+            
+            let content = `
+                <div class="sell-confirm">
+                    <div class="sell-confirm-item">
+                        <span>专利名称</span>
+                        <span>${cell.icon} ${cell.name}</span>
+                    </div>
+                    <div class="sell-confirm-item">
+                        <span>专利原值</span>
+                        <span>¥${cell.totalValue}万</span>
+                    </div>
+                    <div class="sell-confirm-item">
+                        <span>剩余有效期</span>
+                        <span>${cell.patentLife}年 ${yearDiscount > 0 ? '(折价' + yearDiscount + '%)' : ''}</span>
+                    </div>
+                    <div class="sell-confirm-item">
+                        <span>出售价格</span>
+                        <span style="color:var(--player1-color);font-weight:600">¥${sellPrice}万</span>
+                    </div>
+                </div>
+                <div class="sell-formula">
+                    <strong>计算公式：</strong><br>
+                    ¥${cell.totalValue}万 × ${Math.round(config.TPO_SELL_RATE * 100)}% × ${cell.patentLife}/10 = ¥${sellPrice}万
+                </div>
+                <div class="sell-warning">⚠️ 出售后专利将转为TPO持有，其他玩家经过需支付过路费</div>
+            `;
+            
+            hideModal();
+            setTimeout(() => {
+                showModal('确认出售', content, [
+                    { text: '取消', action: () => hideModal() },
+                    { text: '确认出售', action: () => executeSellPatent(playerIndex, patentIndex), primary: true }
+                ]);
+            }, 100);
+        }
+
+        function executeSellPatent(playerIndex, patentIndex) {
+            hideModal();
+            playSound('success');
+            
+            const player = gameState.players[playerIndex];
+            const cell = gameState.cells[patentIndex];
+            const yearRate = cell.patentLife / 10;
+            const sellPrice = Math.round(cell.totalValue * config.TPO_SELL_RATE * yearRate);
+            
+            player.cash += sellPrice;
+            player.roundIncome += sellPrice;
+            
+            const patentIndexInArray = player.patents.indexOf(patentIndex);
+            if (patentIndexInArray > -1) {
+                player.patents.splice(patentIndexInArray, 1);
+            }
+            
+            cell.owner = null;
+            cell.isTPO = true;
+            cell.tpoTurns = 0;
+            
+            addNews(`💰 ${player.name}将${cell.name}专利出售给TPO，获得¥${sellPrice}万`);
+            addLedgerEntry(playerIndex, 'income', `出售${cell.name}专利给TPO`, sellPrice);
+            
+            const cashEl = document.getElementById(`player${playerIndex + 1}-cash`);
+            showTransactionAnimation(sellPrice, true, cashEl);
+            
+            updateUI();
+            renderBoard();
+            
+            if (playerIndex === gameState.currentPlayer) {
+                gameState.hasRolled = false;
+                gameState.isMoving = false;
+                
+                const currentPlayer = gameState.players[gameState.currentPlayer];
+                document.getElementById('turn-info').innerHTML = `
+                    <strong style="color:var(--player${gameState.currentPlayer + 1}-color)">${currentPlayer.name}</strong>，点击"掷骰子"开始你的回合
+                `;
+                showActionButtons(['roll']);
+            }
+        }
+
+        function showModal(title, content, buttons) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-content').innerHTML = content;
+            
+            const btnContainer = document.getElementById('modal-buttons');
+            btnContainer.innerHTML = '';
+            
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.className = `btn ${btn.primary ? 'btn-primary' : 'btn-secondary'}`;
+                button.textContent = btn.text;
+                button.addEventListener('click', btn.action);
+                btnContainer.appendChild(button);
+            });
+            
+            document.getElementById('modal-overlay').classList.add('show');
+        }
+
+        function hideModal() {
+            document.getElementById('modal-overlay').classList.remove('show');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            playSound('click');
+        }
+
+        function loadSettingsToPanel() {
+            document.getElementById('set-patent-fee').value = config.PATENT_APP_FEE;
+            document.getElementById('set-license-rate').value = Math.round(config.LICENSE_RATE * 100);
+            document.getElementById('set-rnd-return').value = Math.round(config.RND_RETURN_RATE * 100);
+            document.getElementById('set-maintenance').value = Math.round(config.MAINTENANCE_RATE * 100);
+            document.getElementById('set-invalid-cost').value = Math.round(config.INVALID_COST_RATE * 100);
+            document.getElementById('set-invalid-rate').value = Math.round(config.INVALID_SUCCESS_RATE * 100);
+            document.getElementById('set-tpo-sell').value = Math.round(config.TPO_SELL_RATE * 100);
+            document.getElementById('set-tpo-fee').value = Math.round(config.TPO_FEE_RATE * 100);
+            document.getElementById('set-tpo-life').value = config.TPO_LIFETIME;
+            document.getElementById('set-max-uses').value = config.MAX_LICENSE_USES;
+            document.getElementById('set-init-cash').value = config.INITIAL_CASH;
+        }
+
+        function validateSettings() {
+            const inputs = document.querySelectorAll('.setting-input');
+            let valid = true;
+            
+            inputs.forEach(input => {
+                const value = parseFloat(input.value);
+                const min = parseFloat(input.min);
+                const max = parseFloat(input.max);
+                
+                if (isNaN(value)) {
+                    input.classList.add('error');
+                    valid = false;
+                } else if (input.min !== '' && value < min) {
+                    input.classList.add('error');
+                    valid = false;
+                } else if (input.max !== '' && value > max) {
+                    input.classList.add('error');
+                    valid = false;
+                } else {
+                    input.classList.remove('error');
+                }
+            });
+            
+            return valid;
+        }
+
+        function applySettings() {
+            if (!validateSettings()) {
+                showModal('错误', '请检查输入值，确保所有数值在有效范围内。', [{ text: '确定', action: () => hideModal() }]);
+                return;
+            }
+            
+            config.PATENT_APP_FEE = parseInt(document.getElementById('set-patent-fee').value);
+            config.LICENSE_RATE = parseFloat(document.getElementById('set-license-rate').value) / 100;
+            config.RND_RETURN_RATE = parseFloat(document.getElementById('set-rnd-return').value) / 100;
+            config.MAINTENANCE_RATE = parseFloat(document.getElementById('set-maintenance').value) / 100;
+            config.INVALID_COST_RATE = parseFloat(document.getElementById('set-invalid-cost').value) / 100;
+            config.INVALID_SUCCESS_RATE = parseFloat(document.getElementById('set-invalid-rate').value) / 100;
+            config.TPO_SELL_RATE = parseFloat(document.getElementById('set-tpo-sell').value) / 100;
+            config.TPO_FEE_RATE = parseFloat(document.getElementById('set-tpo-fee').value) / 100;
+            config.TPO_LIFETIME = parseInt(document.getElementById('set-tpo-life').value);
+            config.MAX_LICENSE_USES = parseInt(document.getElementById('set-max-uses').value);
+            config.INITIAL_CASH = parseInt(document.getElementById('set-init-cash').value);
+            
+            updateRulesDisplay();
+            
+            showModal('设置已保存', '游戏参数已更新。是否重新开始游戏以应用新设置？', [
+                { text: '重新开始', action: () => { hideModal(); initGame(); }, primary: true },
+                { text: '继续游戏', action: () => hideModal() }
+            ]);
+            
+            playSound('success');
+        }
+
+        function resetSettings() {
+            config = { ...DEFAULT_CONFIG };
+            loadSettingsToPanel();
+            playSound('click');
+        }
+
+        function updateRulesDisplay() {
+            document.getElementById('rule-patent-cost').textContent = `总成本 = 研发费用 + 专利申请费(固定${config.PATENT_APP_FEE}万)`;
+            document.getElementById('rule-license').textContent = `许可费 = 研发费 × ${Math.round(config.LICENSE_RATE * 100)}%`;
+            document.getElementById('rule-rnd').textContent = `研发经营收益：累计研发费 × ${Math.round(config.RND_RETURN_RATE * 100)}%`;
+            document.getElementById('rule-maint').textContent = `专利维护年费：专利总价值 × ${Math.round(config.MAINTENANCE_RATE * 100)}%`;
+            document.getElementById('rule-invalid-cost').textContent = `成本：目标专利价值 × ${Math.round(config.INVALID_COST_RATE * 100)}%`;
+            document.getElementById('rule-invalid-rate').textContent = `成功率：${Math.round(config.INVALID_SUCCESS_RATE * 100)}%`;
+            document.getElementById('rule-tpo-sell').textContent = `出售价格：原始购入价 × ${Math.round(config.TPO_SELL_RATE * 100)}%`;
+            document.getElementById('rule-tpo-fee').textContent = `TPO专利：所有玩家经过需支付基础价值×${Math.round(config.TPO_FEE_RATE * 100)}%`;
+            document.getElementById('rule-tpo-life').textContent = `有效期：${config.TPO_LIFETIME}回合后失效`;
+            document.getElementById('rule-cliff').textContent = `每个专利最多收取${config.MAX_LICENSE_USES}次许可费，期满后进入公有领域。`;
+        }
+
+        function addNews(text) {
+            const newsItem = {
+                text: text,
+                turn: gameState.turnNumber,
+                player: gameState.players[gameState.currentPlayer].name
+            };
+            gameState.news.unshift(newsItem);
+            if (gameState.news.length > 50) gameState.news.pop();
+            
+            document.getElementById('ticker-text').textContent = text;
+        }
+
+        function showNewsHistory() {
+            playSound('click');
+            
+            let content = '<div class="news-history-list">';
+            
+            if (gameState.news.length === 0) {
+                content += '<div class="news-empty">暂无历史消息</div>';
+            } else {
+                gameState.news.forEach((item, index) => {
+                    content += `
+                        <div class="news-item">
+                            <div class="news-item-time">回合 ${item.turn} - ${item.player}</div>
+                            ${item.text}
+                        </div>
+                    `;
+                });
+            }
+            
+            content += '</div>';
+            
+            showModal('📢 产业动态历史', content, [{ text: '关闭', action: () => hideModal() }]);
+            
+            document.getElementById('modal').classList.add('news-history-modal');
+        }
+
+        window.addEventListener('resize', updateMarkers);
+
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
